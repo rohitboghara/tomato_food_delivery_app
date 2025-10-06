@@ -1,0 +1,46 @@
+version: '3.9'
+
+services:
+   frontend:
+    build: ./frontend
+
+    container_name: tometoshop-frontend
+    ports:
+     - "3000:80"
+    networks:
+      - shop
+   admin:
+     build: ./admin
+     container_name: tometoshop-admin
+     ports:
+      - "3001:80"
+     networks:
+       - shop
+   backend:
+     build: ./backend
+     container_name: tometoshop-backend
+     ports:
+      - "4000:4000"
+     networks:
+       - shop
+     restart: always
+     environment:
+       - MONGO_URI:mongodb://mongodb:27017/store
+      
+   mongodb:
+     image: mongo:6.0
+     container_name: mongodb
+     ports:
+      - "27017:27017"
+     environment:
+      - MONGO_INITDB_DATABASE=store
+     volumes:
+      - mongo-db:/data/db
+     networks:
+      - shop 
+
+
+volumes:
+    mongo-db:
+networks:
+   shop:
