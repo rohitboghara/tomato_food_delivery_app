@@ -28,7 +28,7 @@ services:
        - MONGO_URI:mongodb://mongodb:27017/store
       
    mongodb:
-     image: mongo:4.4
+     image: mongo:8.0
      container_name: mongodb
      ports:
       - "27017:27017"
