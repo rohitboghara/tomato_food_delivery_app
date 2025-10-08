@@ -12,7 +12,15 @@ pipeline {
                 git branch: 'main', url: 'https://github.com/rohitboghara/tomato_food_delivery_app.git'
             }
         }
-
+        stage('Docker service'){
+            steps {
+                sh '''
+                   sudo systemctl start docker
+                   sudo systemctl status docker
+                   '''
+            }
+        }
+                   
         stage('Docker Build') {
             steps {
                 sh '''
