@@ -60,6 +60,7 @@ pipeline {
 
                 echo 'Show running containers'
                 sh 'docker ps'
+                sh 'ifconfig enp0s3 | grep inet'
             }
         }
     }
