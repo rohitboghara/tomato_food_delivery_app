@@ -1,3 +1,4 @@
+@Labrary("Shared") _
 pipeline {
     agent any
 
@@ -9,7 +10,9 @@ pipeline {
         stage('Checkout') {
             steps {
                 echo 'Git Clone Project'
-                git branch: 'main', url: 'https://github.com/rohitboghara/tomato_food_delivery_app.git'
+                script {
+                clone('https://github.com/rohitboghara/tomato_food_delivery_app.git' , 'main')
+                }
             }
         }
         stage('Docker service'){
