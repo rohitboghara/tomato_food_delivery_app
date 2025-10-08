@@ -43,7 +43,16 @@ pipeline {
                 }
             }
         }
-
+        stage('firewall permission') {
+            steps {
+                sh '''
+                  sudo firewall-cmd --add-port=3000/tcp
+                  sudo firewall-cmd --add-port=3001/tcp
+                  sudo firewall-cmd --add-port=3002/tcp
+                  sudo firewall-cmd --add-port=4000/tcp
+                  '''
+            }
+        }
         stage('Deploy') {
             steps {
                 echo 'Deploying containers...'
