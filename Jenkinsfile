@@ -4,10 +4,7 @@ pipeline {
 
     environment {
         DOCKER_IMAGE = 'root938/tomato-food-app'
-<<<<<<< HEAD
-=======
         SONAR_HOME = tool 'Sonar'
->>>>>>> 05eb95a (add sonarqube trive scan)
     }
 
     stages {
@@ -82,19 +79,6 @@ pipeline {
                 }
             }
         }
-<<<<<<< HEAD
-        stage('firewall permission') {
-            steps {
-                sh '''
-                  sudo firewall-cmd --add-port=3000/tcp
-                  sudo firewall-cmd --add-port=3001/tcp
-                  sudo firewall-cmd --add-port=3002/tcp
-                  sudo firewall-cmd --add-port=4000/tcp
-                  '''
-            }
-        }
-        stage('Deploy') {
-=======
 
         stage('Firewall Permission') {
             steps {
@@ -103,14 +87,13 @@ pipeline {
                     sudo firewall-cmd --add-port=3001/tcp --permanent
                     sudo firewall-cmd --add-port=3002/tcp --permanent
                     sudo firewall-cmd --add-port=4000/tcp --permanent
-                    sudo firewall-cmd --add-port=9000/tcp --permanet
+                    sudo firewall-cmd --add-port=9000/tcp
                     sudo firewall-cmd --reload
                 '''
             }
         }
 
         stage('Deploy with Docker Compose') {
->>>>>>> 05eb95a (add sonarqube trive scan)
             steps {
                 echo 'Deploying containers...'
                 sh 'docker compose up -d'
