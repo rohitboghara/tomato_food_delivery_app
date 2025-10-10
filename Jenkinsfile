@@ -3,6 +3,7 @@ pipeline {
 
     environment {
         DOCKER_IMAGE = 'root938/tomato-food-app'
+        SONAR_HOME = 'Sonar'
     }
 
     stages {
@@ -12,7 +13,28 @@ pipeline {
                 git branch: 'main', url: 'https://github.com/rohitboghara/tomato_food_delivery_app.git'
             }
         }
+        stage('SonarQube Quality Analysys') {
+            steps {
+                withSonarQubeEnv('Sonar'){
+                    sh '$SONAR_HOME/bin/sonar-scanner -Dsonar.projectName=tomato_food_delivery_app -Dsonar.projectKey=tomato_food_delivery_app'
 
+                }
+            }
+        }
+        stage('sonar qulity Gate Scan'){
+            steps{
+                timeout(time: 2 ,unit: 'MINUTES') {
+                  waitForQualityGate abortPipeline: false
+                }
+            }
+        }
+        stage('OWASP Dependency Scan'){
+            steps{
+                dependencyCheck additionalArguments: '--scan ./' , odcInstallation: 'dc'
+                dependecyCheckPublisher pattern: '**/dependency-check-repo.xml'
+
+            }
+        }
         stage('Docker Build') {
             steps {
                 sh '''
@@ -35,7 +57,11 @@ pipeline {
                 }
             }
         }
-
+        stage('Trivy File System'){
+            steps{
+                sh 'trivy fs --format table -o trivy-fs-report.html .'
+            }
+        }
         stage('Deploy') {
             steps {
                 echo 'Deploying containers...'
