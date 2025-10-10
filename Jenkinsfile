@@ -1,3 +1,4 @@
+@Library("Shared") _
 pipeline {
     agent any
 
@@ -10,31 +11,20 @@ pipeline {
         stage('Checkout') {
             steps {
                 echo 'Git Clone Project'
-                git branch: 'main', url: 'https://github.com/rohitboghara/tomato_food_delivery_app.git'
+                script {
+                clone('https://github.com/rohitboghara/tomato_food_delivery_app.git' , 'main')
+                }
             }
         }
-        stage('SonarQube Quality Analysys') {
+        stage('Docker service'){
             steps {
-                withSonarQubeEnv('Sonar'){
-                    sh '$SONAR_HOME/bin/sonar-scanner -Dsonar.projectName=tomato_food_delivery_app -Dsonar.projectKey=tomato_food_delivery_app'
+                sh '''
+                   sudo systemctl start docker
+                   sudo systemctl status docker
+                   '''
+            }
+        }
 
-                }
-            }
-        }
-        stage('sonar qulity Gate Scan'){
-            steps{
-                timeout(time: 2 ,unit: 'MINUTES') {
-                  waitForQualityGate abortPipeline: false
-                }
-            }
-        }
-        stage('OWASP Dependency Scan'){
-            steps{
-                dependencyCheck additionalArguments: '--scan ./' , odcInstallation: 'dc'
-                dependecyCheckPublisher pattern: '**/dependency-check-repo.xml'
-
-            }
-        }
         stage('Docker Build') {
             steps {
                 sh '''
@@ -57,11 +47,7 @@ pipeline {
                 }
             }
         }
-        stage('Trivy File System'){
-            steps{
-                sh 'trivy fs --format table -o trivy-fs-report.html .'
-            }
-        }
+
         stage('Deploy') {
             steps {
                 echo 'Deploying containers...'
@@ -69,6 +55,7 @@ pipeline {
 
                 echo 'Show running containers'
                 sh 'docker ps'
+                sh 'ifconfig enp0s3 | grep inet'
             }
         }
     }

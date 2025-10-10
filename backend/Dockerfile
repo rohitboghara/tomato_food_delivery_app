@@ -6,6 +6,7 @@ WORKDIR /apps
 COPY package*.json ./
 
 RUN npm install
+RUN npm install prom-client
 
 RUN npm install bcryptjs
 
