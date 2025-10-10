@@ -4,23 +4,59 @@ pipeline {
 
     environment {
         DOCKER_IMAGE = 'root938/tomato-food-app'
+<<<<<<< HEAD
+=======
+        SONAR_HOME = tool 'Sonar'
+>>>>>>> 05eb95a (add sonarqube trive scan)
     }
 
     stages {
         stage('Checkout') {
             steps {
-                echo 'Git Clone Project'
-                script {
-                clone('https://github.com/rohitboghara/tomato_food_delivery_app.git' , 'main')
+                echo 'Cloning project from GitHub...'
+                git url: 'https://github.com/rohitboghara/tomato_food_delivery_app.git', branch: 'main'
+            }
+        }
+
+        stage("SonarQube Quality Analysis") {
+            steps {
+                withSonarQubeEnv("Sonar") {
+                    sh '''
+                        $SONAR_HOME/bin/sonar-scanner \
+                        -Dsonar.projectName=tomato_food_delivery_app \
+                        -Dsonar.projectKey=tomato_food_delivery_app
+                    '''
                 }
             }
         }
-        stage('Docker service'){
+
+        stage("SonarQube Quality Gate") {
+            steps {
+                timeout(time: 2, unit: 'MINUTES') {
+                    waitForQualityGate abortPipeline: false
+                }
+            }
+        }
+
+        stage("OWASP Dependency Scan") {
+            steps {
+                dependencyCheck additionalArguments: '--scan ./', odcInstallation: 'dc'
+                dependencyCheckPublisher pattern: '**/dependency-check-report.xml'
+            }
+        }
+
+        stage("Trivy File System Scan") {
+            steps {
+                sh 'trivy fs --format table -o trivy-fs-report.html .'
+            }
+        }
+
+        stage('Start Docker Service') {
             steps {
                 sh '''
-                   sudo systemctl start docker
-                   sudo systemctl status docker
-                   '''
+                    sudo systemctl start docker
+                    sudo systemctl status docker
+                '''
             }
         }
 
@@ -46,6 +82,7 @@ pipeline {
                 }
             }
         }
+<<<<<<< HEAD
         stage('firewall permission') {
             steps {
                 sh '''
@@ -57,12 +94,31 @@ pipeline {
             }
         }
         stage('Deploy') {
+=======
+
+        stage('Firewall Permission') {
+            steps {
+                sh '''
+                    sudo firewall-cmd --add-port=3000/tcp --permanent
+                    sudo firewall-cmd --add-port=3001/tcp --permanent
+                    sudo firewall-cmd --add-port=3002/tcp --permanent
+                    sudo firewall-cmd --add-port=4000/tcp --permanent
+                    sudo firewall-cmd --add-port=9000/tcp --permanet
+                    sudo firewall-cmd --reload
+                '''
+            }
+        }
+
+        stage('Deploy with Docker Compose') {
+>>>>>>> 05eb95a (add sonarqube trive scan)
             steps {
                 echo 'Deploying containers...'
                 sh 'docker compose up -d'
 
-                echo 'Show running containers'
+                echo 'Showing running containers:'
                 sh 'docker ps'
+
+                echo 'Server IP address:'
                 sh 'ifconfig enp0s3 | grep inet'
             }
         }
