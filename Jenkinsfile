@@ -19,6 +19,7 @@ pipeline {
             steps {
                 withSonarQubeEnv("Sonar") {
                     sh '''
+                        firewall-cmd --add-port=9000/tcp
                         $SONAR_HOME/bin/sonar-scanner \
                         -Dsonar.projectName=tomato_food_delivery_app \
                         -Dsonar.projectKey=tomato_food_delivery_app
@@ -87,7 +88,6 @@ pipeline {
                     sudo firewall-cmd --add-port=3001/tcp --permanent
                     sudo firewall-cmd --add-port=3002/tcp --permanent
                     sudo firewall-cmd --add-port=4000/tcp --permanent
-                    sudo firewall-cmd --add-port=9000/tcp
                     sudo firewall-cmd --reload
                 '''
             }
