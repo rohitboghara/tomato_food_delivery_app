@@ -24,7 +24,7 @@ services:
        - shop
      restart: always
      environment:
-       - MONGO_URI:mongodb://mongodb:27017/store
+       - MONGO_URI=mongodb://mongodb:27017/store
       
    mongodb:
      image: mongo:4.4
