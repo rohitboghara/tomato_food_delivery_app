@@ -7,6 +7,7 @@ const Cart = () => {
 
   const {cartItems, food_list, removeFromCart,getTotalCartAmount,url} = useContext(StoreContext);
   const navigate = useNavigate();
+  const deliveryFee = 50;
 
   return (
     <div className='cart'>
@@ -22,9 +23,9 @@ const Cart = () => {
               <div className="cart-items-title cart-items-item">
                 <img src={url+"/images/"+item.image} alt="" />
                 <p>{item.name}</p>
-                <p>${item.price}</p>
+                <p>₹{item.price}</p>
                 <div>{cartItems[item._id]}</div>
-                <p>${item.price*cartItems[item._id]}</p>
+                <p>₹{item.price*cartItems[item._id]}</p>
                 <p className='cart-items-remove-icon' onClick={()=>removeFromCart(item._id)}>x</p>
               </div>
               <hr />
@@ -36,11 +37,11 @@ const Cart = () => {
         <div className="cart-total">
           <h2>Cart Totals</h2>
           <div>
-            <div className="cart-total-details"><p>Subtotal</p><p>${getTotalCartAmount()}</p></div>
+            <div className="cart-total-details"><p>Subtotal</p><p>₹{getTotalCartAmount()}</p></div>
             <hr />
-            <div className="cart-total-details"><p>Delivery Fee</p><p>${getTotalCartAmount()===0?0:5}</p></div>
+            <div className="cart-total-details"><p>Delivery Fee</p><p>₹{getTotalCartAmount()===0?0:deliveryFee}</p></div>
             <hr />
-            <div className="cart-total-details"><b>Total</b><b>${getTotalCartAmount()===0?0:getTotalCartAmount()+5}</b></div>
+            <div className="cart-total-details"><b>Total</b><b>₹{getTotalCartAmount()===0?0:getTotalCartAmount()+deliveryFee}</b></div>
           </div>
           <button onClick={()=>navigate('/order')}>PROCEED TO CHECKOUT</button>
         </div>

@@ -4,7 +4,7 @@ import { assets,url } from '../../assets/assets';
 import axios from 'axios';
 import { toast } from 'react-toastify';
 
-const Add = () => {
+const Add = ({ adminToken }) => {
 
     const [data, setData] = useState({
         name: "",
@@ -23,7 +23,7 @@ const Add = () => {
         formData.append("price", Number(data.price));
         formData.append("category", data.category);
         formData.append("image", image);
-        const response = await axios.post(`${url}/api/food/add`, formData);
+        const response = await axios.post(`${url}/api/food/add`, formData, { headers: { token: adminToken } });
         if (response.data.success) {
             toast.success(response.data.message)
             setData({
@@ -79,7 +79,7 @@ const Add = () => {
                     </div>
                     <div className='add-price flex-col'>
                         <p>Product Price</p>
-                        <input type="Number" name='price' onChange={onChangeHandler} value={data.price} placeholder='$25' />
+                        <input type="Number" name='price' onChange={onChangeHandler} value={data.price} placeholder='₹250' />
                     </div>
                 </div>
                 <button type='submit' className='add-btn' >ADD</button>

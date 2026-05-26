@@ -5,7 +5,9 @@
   "type": "module",
   "main": "server.js",
   "scripts": {
-    "server": "nodemon server.js"
+    "server": "nodemon server.js",
+    "start": "node server.js",
+    "seed": "node scripts/seedFoods.js"
   },
   "author": "",
   "license": "ISC",

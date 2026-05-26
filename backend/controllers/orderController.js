@@ -1,17 +1,27 @@
 import orderModel from "../models/orderModel.js";
 import userModel from "../models/userModel.js"
 import Stripe from "stripe";
+import { isObjectId, validateOrderInput, validateStatus } from "../utils/validation.js";
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 
 // config variables
 const currency = "inr";
 const deliveryCharge = 50;
-const frontend_URL = 'https://tomato-frontend-ds0g.onrender.com';
+
+const getFrontendUrl = (req) => {
+    const protocol = req.get("x-forwarded-proto") || req.protocol;
+    return process.env.FRONTEND_URL || req.get("origin") || `${protocol}://${req.hostname}:3000`;
+}
 
 // Placing User Order for Frontend
 const placeOrder = async (req, res) => {
 
     try {
+        const validationError = validateOrderInput(req.body);
+        if (validationError) {
+            return res.status(400).json({ success: false, message: validationError });
+        }
+
         const newOrder = new orderModel({
             userId: req.body.userId,
             items: req.body.items,
@@ -20,6 +30,7 @@ const placeOrder = async (req, res) => {
         })
         await newOrder.save();
         await userModel.findByIdAndUpdate(req.body.userId, { cartData: {} });
+        const frontendUrl = getFrontendUrl(req);
 
         const line_items = req.body.items.map((item) => ({
             price_data: {
@@ -27,25 +38,25 @@ const placeOrder = async (req, res) => {
               product_data: {
                 name: item.name
               },
-              unit_amount: item.price*100*80
+              unit_amount: item.price * 100
             },
             quantity: item.quantity
           }))
 
         line_items.push({
             price_data:{
-                currency:"inr",
+                currency,
                 product_data:{
                     name:"Delivery Charge"
                 },
-                unit_amount: 5*80*100
+                unit_amount: deliveryCharge * 100
             },
             quantity:1
         })
         
           const session = await stripe.checkout.sessions.create({
-            success_url: `http://localhost:5173/verify?success=true&orderId=${newOrder._id}`,
-            cancel_url: `http://localhost:5173/verify?success=false&orderId=${newOrder._id}`,
+            success_url: `${frontendUrl}/verify?success=true&orderId=${newOrder._id}`,
+            cancel_url: `${frontendUrl}/verify?success=false&orderId=${newOrder._id}`,
             line_items: line_items,
             mode: 'payment',
           });
@@ -81,8 +92,10 @@ const userOrders = async (req, res) => {
 }
 
 const updateStatus = async (req, res) => {
-    console.log(req.body);
     try {
+        if (!isObjectId(req.body.orderId) || !validateStatus(req.body.status)) {
+            return res.status(400).json({ success: false, message: "Invalid order status update" });
+        }
         await orderModel.findByIdAndUpdate(req.body.orderId, { status: req.body.status });
         res.json({ success: true, message: "Status Updated" })
     } catch (error) {
@@ -94,6 +107,9 @@ const updateStatus = async (req, res) => {
 const verifyOrder = async (req, res) => {
     const {orderId , success} = req.body;
     try {
+        if (!isObjectId(orderId)) {
+            return res.status(400).json({ success: false, message: "Invalid order id" });
+        }
         if (success==="true") {
             await orderModel.findByIdAndUpdate(orderId, { payment: true });
             res.json({ success: true, message: "Paid" })

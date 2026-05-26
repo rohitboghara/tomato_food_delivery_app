@@ -4,7 +4,7 @@ import { url } from '../../assets/assets'
 import axios from 'axios';
 import { toast } from 'react-toastify';
 
-const List = () => {
+const List = ({ adminToken }) => {
 
   const [list,setList] = useState([]);
   
@@ -22,7 +22,7 @@ const List = () => {
   const removeFood = async (foodId) => {
     const response = await axios.post(`${url}/api/food/remove`,{
       id:foodId
-    })
+    }, { headers: { token: adminToken } })
     await fetchList();
     if (response.data.success) {
       toast.success(response.data.message);
@@ -53,7 +53,7 @@ const List = () => {
                 <img src={`${url}/images/`+item.image} alt="" />
                 <p>{item.name}</p>
                 <p>{item.category}</p>
-                <p>${item.price}</p>
+                <p>₹{item.price}</p>
                 <p className='cursor' onClick={()=>removeFood(item._id)}>x</p>
               </div>
             )

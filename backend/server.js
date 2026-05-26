@@ -5,12 +5,14 @@ import userRouter from "./routes/userRoute.js";
 import foodRouter from "./routes/foodRoute.js";
 import cartRouter from "./routes/cartRoute.js";
 import orderRouter from "./routes/orderRoute.js";
+import adminRouter from "./routes/adminRoute.js";
 import 'dotenv/config';
 import client from "prom-client"; // 🧩 Prometheus client import
 
 // App config
 const app = express();
 const port = process.env.PORT || 4000;
+app.set("trust proxy", 1);
 
 // Middlewares
 app.use(express.json());
@@ -49,6 +51,7 @@ app.use("/api/food", foodRouter);
 app.use("/images", express.static('uploads'));
 app.use("/api/cart", cartRouter);
 app.use("/api/order", orderRouter);
+app.use("/api/admin", adminRouter);
 
 // Test route
 app.get("/", (req, res) => res.send("🍅 API Working with Prometheus Metrics!"));
@@ -64,5 +67,12 @@ app.get("/metrics", async (req, res) => {
   }
 });
 
+app.use((err, req, res, next) => {
+  if (err) {
+    return res.status(400).json({ success: false, message: err.message || "Bad request" });
+  }
+  next();
+});
+
 // Start server
-app.listen(port, () => console.log(`🚀 Server started on http://localhost:${port}`));
+app.listen(port, () => console.log(`🚀 Server started on port ${port}`));

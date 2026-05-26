@@ -12,6 +12,10 @@ const createToken = (id) => {
 const loginUser = async (req, res) => {
     const { email, password } = req.body;
     try {
+        if (!validator.isEmail(String(email || "")) || !password) {
+            return res.status(400).json({ success: false, message: "Valid email and password are required" });
+        }
+
         const user = await userModel.findOne({ email });
 
         if (!user) {
@@ -36,6 +40,10 @@ const loginUser = async (req, res) => {
 const registerUser = async (req, res) => {
     const { name, email, password } = req.body;
     try {
+        if (!name || name.trim().length < 2) {
+            return res.status(400).json({ success: false, message: "Please enter your name" });
+        }
+
         // Check if user already exists
         const exists = await userModel.findOne({ email });
         if (exists) {

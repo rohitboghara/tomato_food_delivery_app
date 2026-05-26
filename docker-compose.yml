@@ -1,33 +1,46 @@
-version: '3.9'
-
 services:
    frontend:
-    image: root938/tomato-food-app-frontend:1.0
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    image: tomato-food-app-frontend:local
     container_name: frontend
     ports:
      - "3000:80"
     networks:
       - shop
    admin:
-     image: root938/tomato-food-app-admin:1.0
+     build:
+       context: ./admin
+       dockerfile: Dockerfile
+     image: tomato-food-app-admin:local
      container_name: admin
      ports:
       - "3001:80"
      networks:
        - shop
    backend:
-     image: root938/tomato-food-app-backend:1.0
+     build:
+       context: ./backend
+       dockerfile: Dockerfile
+     image: tomato-food-app-backend:local
      container_name: backend
      ports:
       - "4000:4000"
+     volumes:
+       - ./backend/uploads:/apps/uploads
      networks:
        - shop
      restart: always
      environment:
-       - MONGO_URI=mongodb://mongodb:27017/store
+       MONGO_URI: mongodb://mongodb:27017/store
+       JWT_SECRET: "random#secret"
+       ADMIN_EMAIL: admin@tomato.local
+       ADMIN_USERNAME: admin
+       ADMIN_PASSWORD: admin12345
       
    mongodb:
-     image: mongo:4.4
+     image: mongo:latest
      container_name: mongodb
      ports:
       - "27017:27017"
@@ -63,6 +76,22 @@ services:
      restart: always
      depends_on:
       - prometheus
+   nginx:
+     image: nginx:alpine
+     container_name: tomato_https
+     ports:
+      - "443:443"
+      - "8443:8443"
+     volumes:
+      - ./nginx/https.conf:/etc/nginx/conf.d/default.conf:ro
+      - ./nginx/certs:/etc/nginx/certs:ro
+     networks:
+      - shop
+     restart: always
+     depends_on:
+      - frontend
+      - admin
+      - backend
       
 volumes:
     mongo-db:
