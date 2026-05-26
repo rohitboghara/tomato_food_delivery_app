@@ -38,8 +38,6 @@ services:
        ADMIN_EMAIL: admin@tomato.local
        ADMIN_USERNAME: admin
        ADMIN_PASSWORD: admin12345
-     depends_on:
-        - mongodb
    mongodb:
      image: mongo:latest
      container_name: mongodb
